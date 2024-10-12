@@ -3,6 +3,8 @@
 import tkinter as tk
 from tkinter import scrolledtext
 from core.language_model.modelo_linguagem import ModeloLinguagem
+from utils.logger import configurar_logger
+from utils.exceptions import InterfaceUsuarioError
 
 class InterfaceUsuario:
     def __init__(self, master):
@@ -11,6 +13,7 @@ class InterfaceUsuario:
         self.master.geometry("600x400")
 
         self.modelo = ModeloLinguagem()
+        self.logger = configurar_logger("interface_usuario")
 
         self.criar_widgets()
 
@@ -25,19 +28,27 @@ class InterfaceUsuario:
         self.botao_enviar.grid(row=1, column=1, padx=10, pady=10)
 
     def processar_entrada(self):
-        texto_usuario = self.entrada.get()
-        self.chat_area.insert(tk.END, f"Você: {texto_usuario}\n")
-        
-        # Processa o texto usando o modelo de linguagem
-        resultado = self.modelo.processar_texto(texto_usuario)
-        sentimento = self.modelo.analisar_sentimento(texto_usuario)
-        
-        # Gera uma resposta simples
-        resposta = f"Entendi! Detectei {len(resultado['entidades'])} entidades e {len(resultado['substantivos'])} substantivos. "
-        resposta += f"O sentimento parece ser {sentimento}."
-        
-        self.chat_area.insert(tk.END, f"Gysin-IA: {resposta}\n\n")
-        self.entrada.delete(0, tk.END)
+        try:
+            texto_usuario = self.entrada.get()
+            self.logger.info(f"Entrada do usuário: {texto_usuario}")
+            self.chat_area.insert(tk.END, f"Você: {texto_usuario}\n")
+            
+            resultado = self.modelo.processar_texto(texto_usuario)
+            sentimento = self.modelo.analisar_sentimento(texto_usuario)
+            
+            resposta = f"Entendi! Detectei {len(resultado['entidades'])} entidades e {len(resultado['substantivos'])} substantivos. "
+            resposta += f"O sentimento parece ser {sentimento}."
+            
+            self.logger.info(f"Resposta gerada: {resposta}")
+            self.chat_area.insert(tk.END, f"Gysin-IA: {resposta}\n\n")
+            self.entrada.delete(0, tk.END)
+
+            # Salvar informação na memória
+            self.modelo.salvar_informacao("ultima_interacao", texto_usuario)
+
+        except Exception as e:
+            self.logger.error(f"Erro ao processar entrada: {str(e)}")
+            self.chat_area.insert(tk.END, f"Gysin-IA: Desculpe, ocorreu um erro ao processar sua entrada.\n\n")
 
 if __name__ == "__main__":
     root = tk.Tk()

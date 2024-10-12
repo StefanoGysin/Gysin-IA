@@ -2,6 +2,7 @@
 
 import unittest
 from core.language_model.modelo_linguagem import ModeloLinguagem
+from utils.exceptions import ModeloLinguagemError
 
 class TestModeloLinguagem(unittest.TestCase):
     def setUp(self):
@@ -28,6 +29,19 @@ class TestModeloLinguagem(unittest.TestCase):
         self.assertEqual(self.modelo.analisar_sentimento(texto_positivo), "positivo")
         self.assertEqual(self.modelo.analisar_sentimento(texto_negativo), "negativo")
         self.assertEqual(self.modelo.analisar_sentimento(texto_neutro), "neutro")
+
+    def test_salvar_e_recuperar_informacao(self):
+        chave = "teste_memoria"
+        valor = "Isso é um teste"
+        
+        self.modelo.salvar_informacao(chave, valor)
+        resultado = self.modelo.recuperar_informacao(chave)
+        
+        self.assertEqual(resultado, valor)
+
+    def test_erro_processamento(self):
+        with self.assertRaises(ModeloLinguagemError):
+            self.modelo.processar_texto(None)
 
 if __name__ == '__main__':
     unittest.main()
