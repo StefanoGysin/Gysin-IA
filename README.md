@@ -3,52 +3,57 @@
 ## Visão Geral
 Gysin-IA é um projeto inovador que visa criar uma assistente virtual humanizada, integrada ao ChatGPT, com capacidade de memória para aprender sobre o usuário e se comunicar de forma natural.
 
-## Objetivos
-- Desenvolver uma IA capaz de manter conversas naturais e contextualizadas
-- Implementar um sistema de memória evolutiva para aprendizado contínuo
-- Criar uma interface intuitiva para interação com usuários
-- Integrar com o ChatGPT para processamento avançado de linguagem natural
+## Características Principais
+- Processamento de linguagem natural
+- Análise de sentimento
+- Geração de mapas mentais
+- Sistema de memória e aprendizado contínuo
+- Interface gráfica de usuário
 
-## Tecnologias Principais
+## Requisitos
 - Python 3.9+
-- FastAPI para backend e API
-- SQLAlchemy para gerenciamento de banco de dados
-- Pydantic para validação de dados
-- (Adicionar outras tecnologias relevantes conforme o desenvolvimento avançar)
+- Bibliotecas: spacy, textblob, networkx, matplotlib, tkinter
 
+## Instalação
+1. Clone o repositório:git clone github.com
+cd Gysin-IA
+2. Crie e ative um ambiente virtual:
+python -m venv venv
+source venv/bin/activate # No Windows use venv\Scripts\activate
+3. Instale as dependências:
+pip install -e .
+4. Baixe o modelo do spaCy para português:
+python -m spacy download pt_core_news_sm
+## Uso
+Para iniciar a interface do usuário, execute:
+python -m gysin_ia.interface.interface_usuario
 ## Estrutura do Projeto
-
 ```
-gysin-ia/
+gysin_ia/
 ├── core/
 │ ├── language_model/
-│ ├── query_interface/
-│ ├── mental_map_generator/
-│ └── continuous_learning/
-├── api/
-├── database/
+│ ├── memoria.py
+│ └── mental_map_generator.py
 ├── interface/
-├── tests/
+│ └── interface_usuario.py
 ├── utils/
-├── docs/
+│ ├── exceptions.py
+│ └── logger.py
+├── tests/
 ├── config/
-└── scripts/
+└── setup.py
 ```
-## Configuração do Ambiente de Desenvolvimento
-1. Clone o repositório:
-git clone github.com
-cd Gysin-IA2. Crie e ative um ambiente virtual:
-python -m venv .venv
-..venv\Scripts\Activate.ps1 # No Windows PowerShell3. Instale as dependências:
-pip install -r requirements.txt
-## Uso
-(Adicionar instruções de uso quando disponíveis)
+## Desenvolvimento
+- O projeto está em fase inicial de desenvolvimento.
+- Contribuições são bem-vindas! Por favor, leia o arquivo CONTRIBUTING.md para detalhes sobre nosso código de conduta e o processo para enviar pull requests.
 
-## Contribuição
-Contribuições são bem-vindas! Por favor, leia o arquivo CONTRIBUTING.md (a ser criado) para detalhes sobre nosso código de conduta e o processo para enviar pull requests.
-
+## Testes
+Para executar os testes unitários:
+python -m unittest discover tests
 ## Licença
 Este projeto está licenciado sob a [MIT License](LICENSE).
 
 ## Contato
 Stefano Gysin - stefanogysin@hotmail.com
+
+Link do Projeto: [https://github.com/StefanoGysin/Gysin-IA](https://github.com/StefanoGysin/Gysin-IA)
