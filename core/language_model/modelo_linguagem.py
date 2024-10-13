@@ -14,6 +14,9 @@ class ModeloLinguagem:
 
     def processar_texto(self, texto: str) -> Dict[str, List[str]]:
         try:
+            if not texto:  # Verifica se o texto está vazio ou é None
+                raise ValueError("O texto não pode ser vazio ou None")
+            
             self.logger.info(f"Processando texto: {texto[:50]}...")
             doc = self.nlp(texto)
             
