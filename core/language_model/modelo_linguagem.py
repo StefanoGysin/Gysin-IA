@@ -5,12 +5,14 @@ from typing import List, Dict
 from utils.logger import configurar_logger
 from utils.exceptions import ModeloLinguagemError
 from core.memoria import GerenciadorMemoria
+from core.mental_map_generator import GeradorMapaMental
 
 class ModeloLinguagem:
     def __init__(self):
         self.nlp = spacy.load("pt_core_news_sm")
         self.logger = configurar_logger("modelo_linguagem")
         self.memoria = GerenciadorMemoria()
+        self.gerador_mapa = GeradorMapaMental()
 
     def processar_texto(self, texto: str) -> Dict[str, List[str]]:
         try:
@@ -68,3 +70,21 @@ class ModeloLinguagem:
         except Exception as e:
             self.logger.error(f"Erro ao recuperar informação: {str(e)}")
             raise ModeloLinguagemError(f"Erro ao recuperar informação: {str(e)}")
+
+    def adicionar_ao_mapa_mental(self, conceito: str, relacionados: List[str]):
+        try:
+            self.logger.info(f"Adicionando conceito ao mapa mental: {conceito}")
+            self.gerador_mapa.adicionar_conceito(conceito, relacionados)
+            self.logger.info(f"Conceito adicionado com sucesso: {conceito}")
+        except Exception as e:
+            self.logger.error(f"Erro ao adicionar conceito ao mapa mental: {str(e)}")
+            raise ModeloLinguagemError(f"Erro ao adicionar conceito ao mapa mental: {str(e)}")
+
+    def gerar_mapa_mental(self, arquivo_saida: str = "mapa_mental.png"):
+        try:
+            self.logger.info("Gerando mapa mental")
+            self.gerador_mapa.gerar_mapa(arquivo_saida)
+            self.logger.info(f"Mapa mental gerado com sucesso: {arquivo_saida}")
+        except Exception as e:
+            self.logger.error(f"Erro ao gerar mapa mental: {str(e)}")
+            raise ModeloLinguagemError(f"Erro ao gerar mapa mental: {str(e)}")
