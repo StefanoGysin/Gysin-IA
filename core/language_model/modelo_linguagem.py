@@ -2,6 +2,7 @@
 
 import spacy
 from typing import List, Dict
+from textblob import TextBlob
 from utils.logger import configurar_logger
 from utils.exceptions import ModeloLinguagemError
 from core.memoria import GerenciadorMemoria
@@ -38,15 +39,17 @@ class ModeloLinguagem:
     def analisar_sentimento(self, texto: str) -> str:
         try:
             self.logger.info(f"Analisando sentimento do texto: {texto[:50]}...")
-            # Lógica básica de análise de sentimento
-            if "bom" in texto.lower() or "ótimo" in texto.lower():
+            blob = TextBlob(texto)
+            polaridade = blob.sentiment.polarity
+            
+            if polaridade > 0.1:
                 sentimento = "positivo"
-            elif "ruim" in texto.lower() or "péssimo" in texto.lower():
+            elif polaridade < -0.1:
                 sentimento = "negativo"
             else:
                 sentimento = "neutro"
             
-            self.logger.info(f"Sentimento analisado: {sentimento}")
+            self.logger.info(f"Sentimento analisado: {sentimento} (polaridade: {polaridade:.2f})")
             return sentimento
         except Exception as e:
             self.logger.error(f"Erro ao analisar sentimento: {str(e)}")
