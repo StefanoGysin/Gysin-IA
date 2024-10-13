@@ -1,8 +1,8 @@
 # tests/test_modelo_linguagem.py
 
 import unittest
-from core.language_model.modelo_linguagem import ModeloLinguagem
-from utils.exceptions import ModeloLinguagemError
+from ..core.language_model.modelo_linguagem import ModeloLinguagem
+from ..utils.exceptions import ModeloLinguagemError
 
 class TestModeloLinguagem(unittest.TestCase):
     def setUp(self):
@@ -40,8 +40,8 @@ class TestModeloLinguagem(unittest.TestCase):
         self.assertEqual(resultado, valor)
 
     def test_erro_processamento(self):
-        with self.assertRaises(ModeloLinguagemError):
-            self.modelo.processar_texto(None)
+     with self.assertRaises(ModeloLinguagemError):
+        self.modelo.processar_texto("")
 
 if __name__ == '__main__':
     unittest.main()

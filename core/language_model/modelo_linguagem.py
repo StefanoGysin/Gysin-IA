@@ -65,4 +65,3 @@ class ModeloLinguagem:
         except Exception as e:
             self.logger.error(f"Erro ao recuperar informação: {str(e)}")
             raise ModeloLinguagemError(f"Erro ao recuperar informação: {str(e)}")
-# ... (mantenha o código de teste existente)
