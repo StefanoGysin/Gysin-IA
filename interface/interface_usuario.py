@@ -1,6 +1,6 @@
 # Importações necessárias
 import tkinter as tk
-from tkinter import scrolledtext, filedialog
+from tkinter import scrolledtext, filedialog, simpledialog
 from core.language_model.modelo_linguagem import ModeloLinguagem
 from utils.logger import configurar_logger
 from utils.exceptions import InterfaceUsuarioError
@@ -56,10 +56,24 @@ class InterfaceUsuario:
             texto_usuario = self.entrada.get()
             if texto_usuario:
                 self.chat_area.insert(tk.END, f"Você: {texto_usuario}\n")
-                # Aqui você pode adicionar a lógica para processar o texto do usuário
-                # Por exemplo:
-                # resposta = self.modelo.processar_texto(texto_usuario)
-                # self.chat_area.insert(tk.END, f"Gysin-IA: {resposta}\n\n")
+                
+                # Processar o texto
+                resultado = self.modelo.processar_texto(texto_usuario)
+                
+                # Analisar sentimento
+                sentimento = self.modelo.analisar_sentimento(texto_usuario)
+                
+                # Gerar resposta
+                resposta = f"Entendi! Detectei {len(resultado['entidades'])} entidades, "
+                resposta += f"{len(resultado['substantivos'])} substantivos e {len(resultado['verbos'])} verbos. "
+                resposta += f"O sentimento do texto parece ser {sentimento}."
+                
+                self.chat_area.insert(tk.END, f"Gysin-IA: {resposta}\n\n")
+                
+                # Adicionar ao mapa mental
+                if resultado['substantivos']:
+                    self.modelo.adicionar_ao_mapa_mental(resultado['substantivos'][0], resultado['substantivos'][1:])
+                
                 self.entrada.delete(0, tk.END)  # Limpa o campo de entrada
         except Exception as e:
             self.logger.error(f"Erro ao processar entrada: {str(e)}")
@@ -78,8 +92,19 @@ class InterfaceUsuario:
 
     def modo_aprendizado(self):
         # Método para ativar o modo de aprendizado
-        # Implementação futura
-        pass
+        def solicitar_feedback():
+            texto = self.entrada.get()
+            if texto:
+                feedback = simpledialog.askstring("Feedback", "Qual é o sentimento correto? (positivo/negativo/neutro)")
+                if feedback in ["positivo", "negativo", "neutro"]:
+                    self.modelo.aprender(texto, feedback)
+                    self.chat_area.insert(tk.END, f"Gysin-IA: Obrigado pelo feedback! Aprendi que '{texto}' tem sentimento {feedback}.\n\n")
+                else:
+                    self.chat_area.insert(tk.END, "Gysin-IA: Feedback inválido. Por favor, use 'positivo', 'negativo' ou 'neutro'.\n\n")
+            self.entrada.delete(0, tk.END)
+
+        self.botao_enviar.config(command=solicitar_feedback)
+        self.chat_area.insert(tk.END, "Gysin-IA: Modo de aprendizado ativado. Digite uma frase e forneça o sentimento correto.\n\n")
 
     def limpar_chat(self):
         # Método para limpar a área de chat
