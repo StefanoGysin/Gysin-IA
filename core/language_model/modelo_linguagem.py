@@ -36,24 +36,24 @@ class ModeloLinguagem:
             self.logger.error(f"Erro ao processar texto: {str(e)}")
             raise ModeloLinguagemError(f"Erro ao processar texto: {str(e)}")
 
-def analisar_sentimento(self, texto: str) -> str:
-    try:
-        self.logger.info(f"Analisando sentimento do texto: {texto[:50]}...")
-        blob = TextBlob(texto)
-        polaridade = blob.sentiment.polarity
-        
-        if polaridade > 0.05:  # Reduzimos o limiar para positivo
-            sentimento = "positivo"
-        elif polaridade < -0.05:  # Reduzimos o limiar para negativo
-            sentimento = "negativo"
-        else:
-            sentimento = "neutro"
-        
-        self.logger.info(f"Sentimento analisado: {sentimento} (polaridade: {polaridade:.2f})")
-        return sentimento
-    except Exception as e:
-        self.logger.error(f"Erro ao analisar sentimento: {str(e)}")
-        raise ModeloLinguagemError(f"Erro ao analisar sentimento: {str(e)}")
+    def analisar_sentimento(self, texto: str) -> str:
+        try:
+            self.logger.info(f"Analisando sentimento do texto: {texto[:50]}...")
+            blob = TextBlob(texto)
+            polaridade = blob.sentiment.polarity
+            
+            if polaridade > 0.05:  # Reduzimos o limiar para positivo
+                sentimento = "positivo"
+            elif polaridade < -0.05:  # Reduzimos o limiar para negativo
+                sentimento = "negativo"
+            else:
+                sentimento = "neutro"
+            
+            self.logger.info(f"Sentimento analisado: {sentimento} (polaridade: {polaridade:.2f})")
+            return sentimento
+        except Exception as e:
+            self.logger.error(f"Erro ao analisar sentimento: {str(e)}")
+            raise ModeloLinguagemError(f"Erro ao analisar sentimento: {str(e)}")
 
     def salvar_informacao(self, chave: str, valor: str):
         try:
@@ -91,30 +91,30 @@ def analisar_sentimento(self, texto: str) -> str:
         except Exception as e:
             self.logger.error(f"Erro ao gerar mapa mental: {str(e)}")
             raise ModeloLinguagemError(f"Erro ao gerar mapa mental: {str(e)}")
-        
-def aprender(self, texto: str, feedback_usuario: str):
-    try:
-        self.logger.info(f"Aprendendo com feedback do usuário: {feedback_usuario}")
-        resultado = self.processar_texto(texto)
-        
-        # Recupera o contador de aprendizado atual
-        contador = self.memoria.obter_informacao("contador_aprendizado") or 0
-        contador += 1
-        
-        # Salva o texto e o feedback para aprendizado futuro
-        self.salvar_informacao(f"aprendizado_{contador}", {
-            "texto": texto,
-            "feedback": feedback_usuario,
-            "analise": resultado
-        })
-        
-        # Atualiza o contador
-        self.salvar_informacao("contador_aprendizado", contador)
-        
-        # Aqui você pode implementar lógica adicional para ajustar o modelo
-        # com base no feedback do usuário
-        
-        self.logger.info(f"Aprendizado #{contador} concluído com sucesso")
-    except Exception as e:
-        self.logger.error(f"Erro durante o aprendizado: {str(e)}")
-        raise ModeloLinguagemError(f"Erro durante o aprendizado: {str(e)}")
+
+    def aprender(self, texto: str, feedback_usuario: str):
+        try:
+            self.logger.info(f"Aprendendo com feedback do usuário: {feedback_usuario}")
+            resultado = self.processar_texto(texto)
+            
+            # Recupera o contador de aprendizado atual
+            contador = self.memoria.obter_informacao("contador_aprendizado") or 0
+            contador += 1
+            
+            # Salva o texto e o feedback para aprendizado futuro
+            self.salvar_informacao(f"aprendizado_{contador}", {
+                "texto": texto,
+                "feedback": feedback_usuario,
+                "analise": resultado
+            })
+            
+            # Atualiza o contador
+            self.salvar_informacao("contador_aprendizado", contador)
+            
+            # Aqui você pode implementar lógica adicional para ajustar o modelo
+            # com base no feedback do usuário
+            
+            self.logger.info(f"Aprendizado #{contador} concluído com sucesso")
+        except Exception as e:
+            self.logger.error(f"Erro durante o aprendizado: {str(e)}")
+            raise ModeloLinguagemError(f"Erro durante o aprendizado: {str(e)}")
