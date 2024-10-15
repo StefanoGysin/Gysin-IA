@@ -50,34 +50,37 @@ class InterfaceUsuario:
         self.botao_limpar = tk.Button(self.master, text="Limpar Chat", command=self.limpar_chat)
         self.botao_limpar.grid(row=2, column=2, padx=10, pady=10)
 
+    def restaurar_modo_normal(self):
+        # Restaura o modo normal de operação
+        self.botao_enviar.config(command=self.processar_entrada)
+        self.chat_area.insert(tk.END, "Gysin-IA: Modo normal restaurado.\n\n")     
+
     def processar_entrada(self, event=None):
-        # Método para processar a entrada do usuário
+        # Processa a entrada do usuário
         try:
             texto_usuario = self.entrada.get()
             if texto_usuario:
                 self.chat_area.insert(tk.END, f"Você: {texto_usuario}\n")
                 
-                # Processar o texto
                 resultado = self.modelo.processar_texto(texto_usuario)
-                
-                # Analisar sentimento
                 sentimento = self.modelo.analisar_sentimento(texto_usuario)
                 
-                # Gerar resposta
                 resposta = f"Entendi! Detectei {len(resultado['entidades'])} entidades, "
                 resposta += f"{len(resultado['substantivos'])} substantivos e {len(resultado['verbos'])} verbos. "
                 resposta += f"O sentimento do texto parece ser {sentimento}."
                 
                 self.chat_area.insert(tk.END, f"Gysin-IA: {resposta}\n\n")
                 
-                # Adicionar ao mapa mental
                 if resultado['substantivos']:
                     self.modelo.adicionar_ao_mapa_mental(resultado['substantivos'][0], resultado['substantivos'][1:])
                 
-                self.entrada.delete(0, tk.END)  # Limpa o campo de entrada
+                self.entrada.delete(0, tk.END)
+        except ModeloLinguagemError as e:
+            self.logger.error(f"Erro no modelo de linguagem: {str(e)}")
+            self.chat_area.insert(tk.END, f"Gysin-IA: Desculpe, ocorreu um erro no processamento do texto: {str(e)}\n\n")
         except Exception as e:
-            self.logger.error(f"Erro ao processar entrada: {str(e)}")
-            self.chat_area.insert(tk.END, "Gysin-IA: Desculpe, ocorreu um erro ao processar sua entrada.\n\n")
+            self.logger.error(f"Erro inesperado: {str(e)}")
+            self.chat_area.insert(tk.END, "Gysin-IA: Desculpe, ocorreu um erro inesperado.\n\n")
 
     def gerar_mapa_mental(self):
         # Método para gerar e salvar o mapa mental
@@ -91,7 +94,7 @@ class InterfaceUsuario:
             self.chat_area.insert(tk.END, f"Gysin-IA: Desculpe, ocorreu um erro ao gerar o mapa mental.\n\n")
 
     def modo_aprendizado(self):
-        # Método para ativar o modo de aprendizado
+        # Ativa o modo de aprendizado
         def solicitar_feedback():
             texto = self.entrada.get()
             if texto:
@@ -104,6 +107,7 @@ class InterfaceUsuario:
             self.entrada.delete(0, tk.END)
 
         self.botao_enviar.config(command=solicitar_feedback)
+        self.botao_aprender.config(text="Sair do Modo Aprendizado", command=self.restaurar_modo_normal)
         self.chat_area.insert(tk.END, "Gysin-IA: Modo de aprendizado ativado. Digite uma frase e forneça o sentimento correto.\n\n")
 
     def limpar_chat(self):
