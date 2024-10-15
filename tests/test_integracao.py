@@ -44,6 +44,9 @@ class TestIntegracao:
         self.interface.entrada.insert(0, texto)
         self.interface.processar_entrada()
         
+        # Atualiza a interface para garantir que as alterações sejam refletidas
+        self.interface.master.update()
+        
         output = self.interface.chat_area.get("1.0", tk.END)
         assert "entidades" in output
         assert "substantivos" in output
@@ -66,6 +69,7 @@ class TestIntegracao:
         self.interface.entrada.insert(0, "Estou muito feliz hoje!")
         self.interface.botao_enviar.invoke()
         
+        # Atualiza a interface para garantir que as alterações sejam refletidas
         self.interface.master.update()
         
         output = self.interface.chat_area.get("1.0", tk.END)
