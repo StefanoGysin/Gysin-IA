@@ -18,3 +18,5 @@ venv/
 
 # Environment variables
 .env
+convessor.py
+projeto_combinado.txt

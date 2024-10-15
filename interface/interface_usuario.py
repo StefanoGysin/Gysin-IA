@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter import scrolledtext, filedialog, simpledialog
 from core.language_model.modelo_linguagem import ModeloLinguagem
 from utils.logger import configurar_logger
-from utils.exceptions import InterfaceUsuarioError
+from utils.exceptions import InterfaceUsuarioError, ModeloLinguagemError
 
 class InterfaceUsuario:
     def __init__(self, master):

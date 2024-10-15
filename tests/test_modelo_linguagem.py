@@ -5,6 +5,7 @@ import unittest
 from core.language_model.modelo_linguagem import ModeloLinguagem
 from utils.exceptions import ModeloLinguagemError
 
+
 class TestModeloLinguagem(unittest.TestCase):
     def setUp(self):
         self.modelo = ModeloLinguagem()

@@ -1,0 +1,68 @@
+{
+  "teste_memoria": "Isso \u00e9 um teste",
+  "aprendizado_1": {
+    "texto": "Estou muito feliz hoje!",
+    "feedback": "positivo",
+    "analise": {
+      "entidades": [],
+      "tokens": [
+        "Estou",
+        "muito",
+        "feliz",
+        "hoje",
+        "!"
+      ],
+      "substantivos": [],
+      "verbos": []
+    }
+  },
+  "contador_aprendizado": 4,
+  "aprendizado_2": {
+    "texto": "Estou muito feliz hoje!",
+    "feedback": "positivo",
+    "analise": {
+      "entidades": [],
+      "tokens": [
+        "Estou",
+        "muito",
+        "feliz",
+        "hoje",
+        "!"
+      ],
+      "substantivos": [],
+      "verbos": []
+    }
+  },
+  "aprendizado_3": {
+    "texto": "Estou muito feliz hoje!",
+    "feedback": "positivo",
+    "analise": {
+      "entidades": [],
+      "tokens": [
+        "Estou",
+        "muito",
+        "feliz",
+        "hoje",
+        "!"
+      ],
+      "substantivos": [],
+      "verbos": []
+    }
+  },
+  "aprendizado_4": {
+    "texto": "Estou muito feliz hoje!",
+    "feedback": "positivo",
+    "analise": {
+      "entidades": [],
+      "tokens": [
+        "Estou",
+        "muito",
+        "feliz",
+        "hoje",
+        "!"
+      ],
+      "substantivos": [],
+      "verbos": []
+    }
+  }
+}
