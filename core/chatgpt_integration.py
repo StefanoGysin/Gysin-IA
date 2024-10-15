@@ -1,169 +1,93 @@
-# -*- coding: utf-8 -*-
-"""
-Módulo: interface_usuario
+# core/chatgpt_integration.py
 
-Este módulo implementa a classe InterfaceUsuario, responsável por criar a interface gráfica de usuário (GUI)
-para o assistente virtual Gysin-IA. Ele utiliza a biblioteca Tkinter para criar uma janela interativa onde
-os usuários podem inserir texto, receber respostas do modelo de linguagem, gerar mapas mentais e entrar em
-modo de aprendizado.
-
-Classes:
-    - InterfaceUsuario
-
-Exceções:
-    - InterfaceUsuarioError
-    - ModeloLinguagemError
-
-Dependências:
-    - tkinter
-    - core.language_model.modelo_linguagem
-    - utils.logger
-    - utils.exceptions
-"""
-
-import tkinter as tk
-from tkinter import scrolledtext, filedialog, simpledialog, messagebox
-from core.language_model.modelo_linguagem import ModeloLinguagem
+import openai
 from utils.logger import configurar_logger
-from utils.exceptions import InterfaceUsuarioError, ModeloLinguagemError
+from utils.exceptions import ChatGPTIntegrationError
 
-class InterfaceUsuario:
-    def __init__(self, master: tk.Tk) -> None:
+# Define o modelo a ser usado na API do OpenAI
+MODEL_ENGINE = "text-davinci-002"
+DEFAULT_MAX_TOKENS = 150
+
+class ChatGPTIntegration:
+    def __init__(self, api_key: str, openai_client=openai):
         """
-        Inicializa a interface do usuário, configurando a janela principal e os componentes.
+        Inicializa a integração com o ChatGPT configurando a chave da API e o logger.
+
+        :param api_key: Chave da API fornecida pela OpenAI para autenticação
+        :param openai_client: Cliente OpenAI (padrão é o módulo openai)
+        :raises TypeError: Se a chave da API não for uma string
+        :raises ValueError: Se a chave da API for vazia
+        """
+        self._validar_api_key(api_key)
+        if not hasattr(openai_client, 'Completion'):
+            raise TypeError("openai_client deve ser uma instância válida do cliente OpenAI")
         
-        :param master: Instância principal da janela do Tkinter
+        # Configura a chave da API para uso com o OpenAI
+        self.openai_client = openai_client
+        self.openai_client.api_key = api_key
+        self.model_engine = MODEL_ENGINE  # Adicione esta linha
+        
+        # Configura o logger para esta classe
+        self.logger = configurar_logger("chatgpt_integration")
+
+    def _validar_api_key(self, api_key: str):
         """
-        self.master = master
-        self.master.title("Gysin-IA: Assistente Virtual")
-        self.master.geometry("800x600")
+        Método privado para validar a chave da API.
 
-        self.modelo = ModeloLinguagem()
-        self.logger = configurar_logger("interface_usuario")
+        :param api_key: Chave da API a ser validada
+        :raises TypeError: Se a chave da API não for uma string
+        :raises ValueError: Se a chave da API for vazia
+        """
+        if not isinstance(api_key, str):
+            raise TypeError("A chave da API deve ser uma string")
+        if not api_key:
+            raise ValueError("A chave da API não pode ser vazia")
 
-        self.criar_widgets()
+    def atualizar_api_key(self, nova_chave: str):
+        """
+        Atualiza a chave da API usada para autenticação.
 
-    def criar_widgets(self) -> None:
-        """Método principal para criar todos os widgets da interface."""
-        self.criar_area_chat()
-        self.criar_area_entrada()
-        self.criar_botoes()
+        :param nova_chave: A nova chave da API a ser configurada
+        :raises ValueError: Se a nova chave for vazia
+        :raises TypeError: Se a nova chave não for uma string
+        """
+        self._validar_api_key(nova_chave)
+        self.openai_client.api_key = nova_chave
+        self.logger.info("Chave da API atualizada com sucesso")
 
-    def criar_area_chat(self) -> None:
-        """Criação da área de chat com barra de rolagem."""
-        self.chat_area = scrolledtext.ScrolledText(self.master, wrap=tk.WORD, width=80, height=30)
-        self.chat_area.grid(row=0, column=0, columnspan=3, padx=10, pady=10)
+    def gerar_resposta(self, prompt: str, max_tokens: int = DEFAULT_MAX_TOKENS) -> str:
+        """
+        Gera uma resposta para um dado prompt usando a API do ChatGPT.
 
-    def criar_area_entrada(self) -> None:
-        """Criação da área de entrada de texto."""
-        self.entrada = tk.Entry(self.master, width=70)
-        self.entrada.grid(row=1, column=0, columnspan=2, padx=10, pady=10)
-        self.entrada.bind("<Return>", self.processar_entrada)
-
-    def criar_botoes(self) -> None:
-        """Criação dos botões da interface."""
-        self.botao_enviar = tk.Button(self.master, text="Enviar", command=self.processar_entrada)
-        self.botao_enviar.grid(row=1, column=2, padx=10, pady=10)
-
-        self.botao_mapa = tk.Button(self.master, text="Gerar Mapa Mental", command=self.gerar_mapa_mental)
-        self.botao_mapa.grid(row=2, column=0, padx=10, pady=10)
-
-        self.botao_aprender = tk.Button(self.master, text="Modo Aprendizado", command=self.modo_aprendizado)
-        self.botao_aprender.grid(row=2, column=1, padx=10, pady=10)
-
-        self.botao_limpar = tk.Button(self.master, text="Limpar Chat", command=self.limpar_chat)
-        self.botao_limpar.grid(row=2, column=2, padx=10, pady=10)
-
-    def restaurar_modo_normal(self) -> None:
-        """Restaura o modo normal de operação."""
-        self.botao_enviar.config(command=self.processar_entrada)
-        self.chat_area.insert(tk.END, "Gysin-IA: Modo normal restaurado.\n\n")
-        self.atualizar_interface()
-
-    def processar_entrada(self, event=None) -> None:
-        """Processa a entrada do usuário e gera uma resposta."""
-        texto_usuario = self.entrada.get().strip()
-        if not texto_usuario:
-            messagebox.showwarning("Entrada vazia", "Por favor, digite algo antes de enviar.")
-            return
-
+        :param prompt: Texto de entrada para o qual se deseja uma resposta
+        :param max_tokens: Número máximo de tokens na resposta gerada
+        :return: Resposta gerada pelo ChatGPT
+        :raises ValueError: Se o prompt for vazio ou max_tokens não for um inteiro positivo
+        :raises ChatGPTIntegrationError: Se ocorrer um erro durante a geração da resposta
+        """
+        if not prompt.strip():
+            raise ValueError("O prompt não pode ser vazio")
+        
+        if not isinstance(max_tokens, int) or max_tokens <= 0:
+            raise ValueError("max_tokens deve ser um inteiro positivo")
+        
         try:
-            self.chat_area.insert(tk.END, f"Você: {texto_usuario}\n")
-            self.atualizar_interface()
-
-            resultado = self.modelo.processar_texto(texto_usuario)
-            sentimento = self.modelo.analisar_sentimento(texto_usuario)
-            resposta_chatgpt = self.modelo.gerar_resposta_chatgpt(texto_usuario)
-
-            resposta = f"Gysin-IA: {resposta_chatgpt}\n\n"
-            resposta += f"Análise: Detectei {len(resultado['entidades'])} entidades, "
-            resposta += f"{len(resultado['substantivos'])} substantivos e {len(resultado['verbos'])} verbos. "
-            resposta += f"O sentimento do texto parece ser {sentimento}."
-
-            self.chat_area.insert(tk.END, resposta + "\n\n")
-            self.atualizar_interface()
-
-            if resultado['substantivos']:
-                self.modelo.adicionar_ao_mapa_mental(resultado['substantivos'][0], resultado['substantivos'][1:])
-
-            self.entrada.delete(0, tk.END)
-        except ModeloLinguagemError as e:
-            self.logger.error(f"Erro no modelo de linguagem: {str(e)}")
-            self.chat_area.insert(tk.END, f"Gysin-IA: Desculpe, ocorreu um erro no processamento do texto: {str(e)}\n\n")
+            # Loga a tentativa de gerar uma resposta
+            self.logger.info(f"Gerando resposta para prompt: {prompt[:50]}...")
+            response = self.openai_client.Completion.create(
+                engine=self.model_engine,
+                prompt=prompt,
+                max_tokens=max_tokens
+            )
+            # Extrai a resposta do objeto de resposta da API
+            resposta = response.choices[0].text.strip()
+            if not resposta:
+                raise ChatGPTIntegrationError("A API retornou uma resposta vazia")
+            return resposta
         except Exception as e:
-            self.logger.error(f"Erro inesperado: {str(e)}")
-            self.chat_area.insert(tk.END, "Gysin-IA: Desculpe, ocorreu um erro inesperado.\n\n")
+            # Loga e levanta um erro se a geração da resposta falhar
+            self.logger.error(f"Erro ao gerar resposta: {str(e)}")
+            raise ChatGPTIntegrationError(f"Erro ao gerar resposta: {str(e)}")
         finally:
-            self.atualizar_interface()
-
-    def gerar_mapa_mental(self) -> None:
-        """Método para gerar e salvar o mapa mental."""
-        try:
-            arquivo_saida = filedialog.asksaveasfilename(defaultextension=".png")
-            if arquivo_saida:
-                self.modelo.gerar_mapa_mental(arquivo_saida)
-                self.chat_area.insert(tk.END, f"Gysin-IA: Mapa mental gerado e salvo em {arquivo_saida}\n\n")
-        except ModeloLinguagemError as e:
-            self.logger.error(f"Erro ao gerar mapa mental: {str(e)}")
-            self.chat_area.insert(tk.END, f"Gysin-IA: Desculpe, ocorreu um erro ao gerar o mapa mental: {str(e)}\n\n")
-        except Exception as e:
-            self.logger.error(f"Erro inesperado ao gerar mapa mental: {str(e)}")
-            self.chat_area.insert(tk.END, "Gysin-IA: Desculpe, ocorreu um erro inesperado ao gerar o mapa mental.\n\n")
-        finally:
-            self.atualizar_interface()
-
-    def modo_aprendizado(self) -> None:
-        """Ativa o modo de aprendizado, solicitando feedback do usuário."""
-        def solicitar_feedback():
-            texto = self.entrada.get().strip()
-            if texto:
-                feedback = simpledialog.askstring("Feedback", "Qual é o sentimento correto? (positivo/negativo/neutro)")
-                if feedback in ["positivo", "negativo", "neutro"]:
-                    self.modelo.aprender(texto, feedback)
-                    self.chat_area.insert(tk.END, f"Gysin-IA: Obrigado pelo feedback! Aprendi que '{texto}' tem sentimento {feedback}.\n\n")
-                else:
-                    self.chat_area.insert(tk.END, "Gysin-IA: Feedback inválido. Por favor, use 'positivo', 'negativo' ou 'neutro'.\n\n")
-            else:
-                messagebox.showwarning("Entrada vazia", "Por favor, digite algo antes de enviar feedback.")
-            self.entrada.delete(0, tk.END)
-            self.atualizar_interface()
-
-        self.botao_enviar.config(command=solicitar_feedback)
-        self.botao_aprender.config(text="Sair do Modo Aprendizado", command=self.restaurar_modo_normal)
-        self.chat_area.insert(tk.END, "Gysin-IA: Modo de aprendizado ativado. Digite uma frase e forneça o sentimento correto.\n\n")
-        self.atualizar_interface()
-
-    def limpar_chat(self) -> None:
-        """Método para limpar a área de chat."""
-        self.chat_area.delete(1.0, tk.END)
-        self.atualizar_interface()
-
-    def atualizar_interface(self) -> None:
-        """Atualiza a interface gráfica."""
-        self.master.update_idletasks()
-
-# Inicialização da aplicação
-if __name__ == "__main__":
-    root = tk.Tk()
-    app = InterfaceUsuario(root)
-    root.mainloop()
+            # Loga a conclusão da operação
+            self.logger.info("Operação de geração de resposta concluída")

@@ -15,3 +15,7 @@ class MemoriaError(GYSINIAException):
 class InterfaceUsuarioError(GYSINIAException):
     """Exceção levantada para erros relacionados à interface do usuário"""
     pass
+
+class ChatGPTIntegrationError(GYSINIAException):
+    """Exceção levantada para erros relacionados à integração com o ChatGPT"""
+    pass
