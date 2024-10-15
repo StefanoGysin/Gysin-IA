@@ -1,4 +1,25 @@
-# core/language_model/modelo_linguagem.py
+# -*- coding: utf-8 -*-
+"""
+Módulo: modelo_linguagem
+
+Este módulo implementa a classe ModeloLinguagem, responsável por processar texto, analisar sentimentos,
+extrair palavras-chave, resumir textos, e interagir com um gerenciador de memória e um gerador de mapas mentais.
+Além disso, integra-se ao ChatGPT para gerar respostas automáticas.
+
+Classes:
+    - ModeloLinguagem
+
+Exceções:
+    - ModeloLinguagemError
+
+Dependências:
+    - spacy
+    - utils.logger
+    - utils.exceptions
+    - core.memoria
+    - core.mental_map_generator
+    - core.chatgpt_integration
+"""
 
 # Importações necessárias
 import spacy
@@ -7,14 +28,20 @@ from utils.logger import configurar_logger
 from utils.exceptions import ModeloLinguagemError
 from core.memoria import GerenciadorMemoria
 from core.mental_map_generator import GeradorMapaMental
+from core.chatgpt_integration import ChatGPTIntegration
 
 class ModeloLinguagem:
-    def __init__(self):
-        """Inicializa o modelo de linguagem, logger, memória e gerador de mapa mental."""
+    def __init__(self, chatgpt_api_key: str):
+        """
+        Inicializa o modelo de linguagem, logger, memória e gerador de mapa mental.
+        
+        :param chatgpt_api_key: Chave da API do ChatGPT
+        """
         self.nlp = spacy.load("pt_core_news_sm")
         self.logger = configurar_logger("modelo_linguagem")
         self.memoria = GerenciadorMemoria()
         self.gerador_mapa = GeradorMapaMental()
+        self.chatgpt = ChatGPTIntegration(api_key=chatgpt_api_key)
 
     def processar_texto(self, texto: str) -> Dict[str, List[str]]:
         """Processa o texto e extrai informações linguísticas."""
@@ -115,3 +142,14 @@ class ModeloLinguagem:
         # Espaço para implementar lógica adicional de ajuste do modelo
         
         self.logger.info(f"Aprendizado #{contador} concluído com sucesso")
+
+    def gerar_resposta_chatgpt(self, texto: str) -> str:
+        """Gera uma resposta usando o ChatGPT."""
+        try:
+            self.logger.info(f"Gerando resposta ChatGPT para: {texto[:50]}...")
+            resposta = self.chatgpt.gerar_resposta(texto)
+            self.logger.info("Resposta ChatGPT gerada com sucesso")
+            return resposta
+        except Exception as e:
+            self.logger.error(f"Erro ao gerar resposta ChatGPT: {str(e)}")
+            raise ModeloLinguagemError(f"Erro ao gerar resposta ChatGPT: {str(e)}")
