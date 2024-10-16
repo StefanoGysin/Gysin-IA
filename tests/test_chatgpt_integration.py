@@ -31,15 +31,13 @@ class TestChatGPTIntegration(unittest.TestCase):
     def setUp(self):
         self.chatgpt = ChatGPTIntegration("fake_api_key")
 
-    @patch('openai.Completion.create')
-    def test_gerar_resposta_sucesso(self, mock_create):
-        """
-        Testa se a função gerar_resposta retorna corretamente uma resposta
-        quando a chamada à API do ChatGPT é bem-sucedida.
-        """
+    @patch('openai.OpenAI')
+    def test_gerar_resposta_sucesso(self, mock_openai):
+        mock_client = MagicMock()
+        mock_openai.return_value = mock_client
         mock_response = MagicMock()
-        mock_response.choices[0].text = "Esta é uma resposta de teste."
-        mock_create.return_value = mock_response
+        mock_response.choices[0].message.content = "Esta é uma resposta de teste."
+        mock_client.chat.completions.create.return_value = mock_response
 
         resposta = self.chatgpt.gerar_resposta("Olá, como você está?")
         self.assertEqual(resposta, "Esta é uma resposta de teste.")
