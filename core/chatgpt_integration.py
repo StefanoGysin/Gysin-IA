@@ -1,59 +1,43 @@
-# core/chatgpt_integration.py
+# -*- coding: utf-8 -*-
+"""
+Módulo: chatgpt_integration
+
+Este módulo fornece a classe ChatGPTIntegration, que facilita a integração com a API do OpenAI ChatGPT.
+Ele permite a geração de respostas automáticas baseadas em prompts de entrada, utilizando o modelo GPT-3.5-turbo
+ou outro modelo especificado.
+
+Autor: Stefano Gysin - StefanoGysin@hotmail.com
+Data: 15/10/2024 13:11 (horário de Zurique)
+
+Classes:
+    - ChatGPTIntegration
+
+Exceções:
+    - ChatGPTIntegrationError
+
+Dependências:
+    - openai
+    - utils.logger
+    - utils.exceptions
+"""
 
 import openai
 from utils.logger import configurar_logger
 from utils.exceptions import ChatGPTIntegrationError
 
-# Define o modelo a ser usado na API do OpenAI
-MODEL_ENGINE = "text-davinci-002"
+# Define constantes para o modelo e tokens
+MODEL_ENGINE = "gpt-3.5-turbo"
 DEFAULT_MAX_TOKENS = 150
 
 class ChatGPTIntegration:
-    def __init__(self, api_key: str, openai_client=openai):
+    def __init__(self, api_key: str):
         """
-        Inicializa a integração com o ChatGPT configurando a chave da API e o logger.
+        Inicializa a integração com o ChatGPT, configurando a chave da API e o logger.
 
         :param api_key: Chave da API fornecida pela OpenAI para autenticação
-        :param openai_client: Cliente OpenAI (padrão é o módulo openai)
-        :raises TypeError: Se a chave da API não for uma string
-        :raises ValueError: Se a chave da API for vazia
         """
-        self._validar_api_key(api_key)
-        if not hasattr(openai_client, 'Completion'):
-            raise TypeError("openai_client deve ser uma instância válida do cliente OpenAI")
-        
-        # Configura a chave da API para uso com o OpenAI
-        self.openai_client = openai_client
-        self.openai_client.api_key = api_key
-        self.model_engine = MODEL_ENGINE  # Adicione esta linha
-        
-        # Configura o logger para esta classe
+        self.client = openai.OpenAI(api_key=api_key)
         self.logger = configurar_logger("chatgpt_integration")
-
-    def _validar_api_key(self, api_key: str):
-        """
-        Método privado para validar a chave da API.
-
-        :param api_key: Chave da API a ser validada
-        :raises TypeError: Se a chave da API não for uma string
-        :raises ValueError: Se a chave da API for vazia
-        """
-        if not isinstance(api_key, str):
-            raise TypeError("A chave da API deve ser uma string")
-        if not api_key:
-            raise ValueError("A chave da API não pode ser vazia")
-
-    def atualizar_api_key(self, nova_chave: str):
-        """
-        Atualiza a chave da API usada para autenticação.
-
-        :param nova_chave: A nova chave da API a ser configurada
-        :raises ValueError: Se a nova chave for vazia
-        :raises TypeError: Se a nova chave não for uma string
-        """
-        self._validar_api_key(nova_chave)
-        self.openai_client.api_key = nova_chave
-        self.logger.info("Chave da API atualizada com sucesso")
 
     def gerar_resposta(self, prompt: str, max_tokens: int = DEFAULT_MAX_TOKENS) -> str:
         """
@@ -72,22 +56,27 @@ class ChatGPTIntegration:
             raise ValueError("max_tokens deve ser um inteiro positivo")
         
         try:
-            # Loga a tentativa de gerar uma resposta
             self.logger.info(f"Gerando resposta para prompt: {prompt[:50]}...")
-            response = self.openai_client.Completion.create(
-                engine=self.model_engine,
-                prompt=prompt,
+            response = self.client.chat.completions.create(
+                model=MODEL_ENGINE,
+                messages=[{"role": "user", "content": prompt}],
                 max_tokens=max_tokens
             )
-            # Extrai a resposta do objeto de resposta da API
-            resposta = response.choices[0].text.strip()
+            resposta = response.choices[0].message.content.strip()
             if not resposta:
                 raise ChatGPTIntegrationError("A API retornou uma resposta vazia")
             return resposta
         except Exception as e:
-            # Loga e levanta um erro se a geração da resposta falhar
             self.logger.error(f"Erro ao gerar resposta: {str(e)}")
             raise ChatGPTIntegrationError(f"Erro ao gerar resposta: {str(e)}")
         finally:
-            # Loga a conclusão da operação
             self.logger.info("Operação de geração de resposta concluída")
+
+    def atualizar_api_key(self, nova_chave: str):
+        """
+        Atualiza a chave da API usada para autenticação.
+
+        :param nova_chave: A nova chave da API a ser configurada
+        """
+        self.client = openai.OpenAI(api_key=nova_chave)
+        self.logger.info("Chave da API atualizada com sucesso")
