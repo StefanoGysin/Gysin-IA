@@ -31,7 +31,7 @@ from unittest.mock import patch, MagicMock
 class TestModeloLinguagem(unittest.TestCase):
     def setUp(self):
         """Configura uma instância do ModeloLinguagem para uso nos testes."""
-        self.modelo = ModeloLinguagem()
+        self.modelo = ModeloLinguagem(chatgpt_api_key="fake_api_key_for_testing")
 
     def test_processar_texto(self):
         """Testa o processamento de texto para verificar se as entidades, tokens, substantivos e verbos são extraídos corretamente."""

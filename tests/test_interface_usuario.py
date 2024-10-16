@@ -7,7 +7,7 @@ do assistente virtual Gysin-IA. Os testes verificam a criação correta dos widg
 de entrada de texto utilizando funcionalidades do modelo de linguagem.
 
 Autor: Stefano Gysin - StefanoGysin@hotmail.com
-Data: 2024-10-15 13:11 (horário de Zurique)
+Data: 15/10/2024 13:11 (horário de Zurique)
 
 Classes:
     - TestInterfaceUsuario
@@ -21,10 +21,11 @@ Dependências:
 import unittest
 import tkinter as tk
 from tkinter import scrolledtext
+from core.language_model.modelo_linguagem import ModeloLinguagem
 from interface.interface_usuario import InterfaceUsuario
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
-# Constantes para strings repetidas
+# Constantes para simular respostas
 PYTHON_RESPONSE = "Python é uma ótima linguagem de programação!"
 PYTHON_QUERY = "Fale-me sobre Python"
 
@@ -42,6 +43,8 @@ class TestInterfaceUsuario(unittest.TestCase):
         """
         self.root = tk.Tk()
         self.app = InterfaceUsuario(self.root)
+        # Simula o modelo de linguagem com uma chave API de teste
+        self.app.modelo = ModeloLinguagem(chatgpt_api_key="fake_api_key_for_testing")
 
     def test_widgets_creation(self):
         """
@@ -77,11 +80,11 @@ class TestInterfaceUsuario(unittest.TestCase):
 
         # Obtém e verifica a saída gerada no chat
         output = self.app.chat_area.get("1.0", tk.END)
-        self.assertIn(PYTHON_RESPONSE, output)
-        self.assertIn("entidades: ['Python']", output)
-        self.assertIn("substantivos: ['programação']", output)
-        self.assertIn("verbos: ['é']", output)
-        self.assertIn("sentimento: positivo", output)
+        self.assertIn(f"Gysin-IA: {PYTHON_RESPONSE}", output)
+        self.assertIn("Detectei 1 entidades", output)
+        self.assertIn("1 substantivos", output)
+        self.assertIn("1 verbos", output)
+        self.assertIn("O sentimento do texto parece ser positivo", output)
 
         # Verifica se os métodos mock foram chamados corretamente
         mock_processar.assert_called_once_with(PYTHON_QUERY)

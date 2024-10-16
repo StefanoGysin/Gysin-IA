@@ -1,5 +1,4 @@
-@"
-[tool.poetry]
+﻿[tool.poetry]
 name = "gysin-ia"
 version = "0.1.0"
 description = "Assistente virtual humanizada com capacidade de memória"
@@ -45,4 +44,3 @@ python_version = "3.9"
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
-"@ | Out-File -FilePath "pyproject.toml" -Encoding utf8

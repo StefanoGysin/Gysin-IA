@@ -29,6 +29,9 @@ from tkinter import scrolledtext, filedialog, simpledialog, messagebox
 from core.language_model.modelo_linguagem import ModeloLinguagem
 from utils.logger import configurar_logger
 from utils.exceptions import InterfaceUsuarioError, ModeloLinguagemError
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Constantes
 TITULO_JANELA = "Gysin-IA: Assistente Virtual"

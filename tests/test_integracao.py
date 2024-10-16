@@ -7,7 +7,7 @@ Este módulo contém testes que verificam a interação entre a interface gráfi
 e o processamento de linguagem natural realizado pelo modelo de linguagem.
 
 Autor: Stefano Gysin - StefanoGysin@hotmail.com
-Data: 2024-10-15 03:28:38 (Zurich)
+Data: 2024-10-15 04:28:38 (Zurich)
 """
 
 import pytest
@@ -16,6 +16,7 @@ from unittest.mock import patch
 
 from core.language_model.modelo_linguagem import ModeloLinguagem
 from interface.interface_usuario import InterfaceUsuario
+
 
 @pytest.mark.usefixtures("tk_root")
 class TestIntegracao:
@@ -33,19 +34,20 @@ class TestIntegracao:
         """
         self.interface = InterfaceUsuario(tk_root)
 
-    def test_processamento_texto_interface(self):
+    def test_processamento_texto_interface(self, tk_root):
         """
         Testa o processamento de texto através da interface do usuário.
         
         Verifica se a saída contém informações sobre entidades, substantivos,
         verbos e sentimento após o processamento do texto de entrada.
+        
+        Args:
+            tk_root: Fixture do pytest para atualização da interface gráfica.
         """
         texto = "O dia está ótimo para programar em Python!"
         self.interface.entrada.insert(0, texto)
         self.interface.processar_entrada()
-        
-        # Atualiza a interface para garantir que as alterações sejam refletidas
-        self.interface.master.update()
+        tk_root.update()
         
         output = self.interface.chat_area.get("1.0", tk.END)
         assert "entidades" in output
@@ -54,7 +56,7 @@ class TestIntegracao:
         assert "sentimento" in output
 
     @patch('tkinter.simpledialog.askstring')
-    def test_modo_aprendizado(self, mock_askstring):
+    def test_modo_aprendizado(self, mock_askstring, tk_root):
         """
         Testa o modo de aprendizado da interface.
         
@@ -62,15 +64,14 @@ class TestIntegracao:
         
         Args:
             mock_askstring: Mock para simular a entrada do usuário em uma caixa de diálogo.
+            tk_root: Fixture do pytest para atualização da interface gráfica.
         """
         mock_askstring.return_value = "positivo"
         
         self.interface.modo_aprendizado()
         self.interface.entrada.insert(0, "Estou muito feliz hoje!")
         self.interface.botao_enviar.invoke()
-        
-        # Atualiza a interface para garantir que as alterações sejam refletidas
-        self.interface.master.update()
+        tk_root.update()
         
         output = self.interface.chat_area.get("1.0", tk.END)
         assert "Obrigado pelo feedback" in output
